@@ -1,3 +1,3 @@
 # ayd_stats
 
-A scraper and stats application for the American Yunguseng Dojang
+The [American Yunguseng Dojang](https://ayd.yunguseng.com/) and the [European Yunguseng Dojang](https://eyd.yunguseng.com/) 
