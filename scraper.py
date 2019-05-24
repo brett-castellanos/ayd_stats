@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 def main():
     """Run the webscraper for https://ayd.yunguseng.com/rating.html"""
-    
+
     ayd_url = 'https://ayd.yunguseng.com/rating.html'
 
     with open('log_file.txt', 'w') as log_file:
