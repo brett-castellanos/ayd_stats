@@ -131,7 +131,7 @@ def scrape_ayd_html():
 
     # Scrape each subpage
     for link in profile_links:
-        soupify(link)
+        soup = soupify(link)
         insert_html_to_mongo(link, soup, html_col)
         time.sleep(5)
 
@@ -154,8 +154,8 @@ def scrape_eyd_html():
     html_col = col_dict['html']
 
     # Scrape each link
-    for link in generate_eyd_urls:
-        soupify(link)
+    for link in generate_eyd_urls():
+        soup = soupify(link)
         insert_html_to_mongo(link, soup, html_col)
         time.sleep(5)
 
