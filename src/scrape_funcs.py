@@ -161,6 +161,17 @@ def scrape_eyd_html():
 
 
 def generate_eyd_urls():
+    """
+    Generates urls for scraping the EYD member pages.
+
+    Parameters
+    ----------
+    None
+
+    Return
+    ------
+    None
+    """
     prepend_address = 'https://eyd.yunguseng.com/season24/profile.php?id='
     for id in range(1, 851):
         yield prepend_address + str(id)
