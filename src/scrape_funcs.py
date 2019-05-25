@@ -134,3 +134,33 @@ def scrape_ayd_html():
         soupify(link)
         insert_html_to_mongo(link, soup, html_col)
         time.sleep(5)
+
+
+def scrape_eyd_html():
+    """
+    Scrapes the member pages of the form:
+    https://eyd.yunguseng.com/season24/profile.php?id=564 from id=1 ... 850
+
+    Parameters
+    ---------
+    None
+
+    Return
+    ------
+    None
+    """
+    # Connect to local MongoDB
+    client, ayd_db, col_dict = get_mongo_connection('eyd', ['html'])
+    html_col = col_dict['html']
+
+    # Scrape each link
+    for link in generate_eyd_urls:
+        soupify(link)
+        insert_html_to_mongo(link, soup, html_col)
+        time.sleep(5)
+
+
+def generate_eyd_urls():
+    prepend_address = 'https://eyd.yunguseng.com/season24/profile.php?id='
+    for id in range(1, 851):
+        yield prepend_address + str(id)
