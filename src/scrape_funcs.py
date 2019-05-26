@@ -3,6 +3,7 @@ from pymongo import MongoClient
 import datetime
 import time
 import requests as req
+import re
 
 
 def get_mongo_connection(database, collections):
@@ -240,8 +241,11 @@ def download_game(game_url, yd):
         'attachment; filename=', ''
     )
 
+    # Extract the file id to ensure all games all collected
+    game_id = re.findall(r'id=(\w+)', game_url)[0]
+
     # Open a new file and write the binary to that file
-    with open('./{}_game_records/'.format(yd)+filename, 'wb') as game_file:
+    with open('./{}_game_records/'.format(yd)+game_id+'_'+filename, 'wb') as game_file:
         game_file.write(game_record.content)
 
     return None

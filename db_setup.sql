@@ -6,11 +6,11 @@ CREATE TABLE users (
 );
 
 CREATE TABLE games (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     black VARCHAR(64) REFERENCES users(kgs_id),
     white VARCHAR(64) REFERENCES users(kgs_id),
     b_win BOOLEAN DEFAULT false,
     w_win BOOLEAN DEFAULT false,
-    tmstmp TIMESTAMP,
+    tmstmp DATE DEFAULT NULL,
     yd_game BOOLEAN DEFAULT false
 );

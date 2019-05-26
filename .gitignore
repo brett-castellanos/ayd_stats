@@ -2,3 +2,4 @@
 *.sgf
 *.pyc
 *.txt
+db_setup.sql
