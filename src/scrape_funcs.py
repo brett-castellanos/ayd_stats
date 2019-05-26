@@ -214,12 +214,12 @@ def scrape_subpage(profile_soup, yd):
 
     # Prepend https://ayd.yunguseng.com/<current-season> to the profile links
     prepend_address = 'https://{}.yunguseng.com/season24/'.format(yd)
-    game_links = [prepend_address+link for link in game_links]
+    game_links = set([prepend_address+link for link in game_links])
 
     # Download each file.
     for game in game_links:
         download_game(game, yd)
-        time.sleep(5)
+        time.sleep(2)
 
     return None
 
@@ -243,7 +243,7 @@ def download_game(game_url, yd):
 
     # Extract the file id to ensure all games all collected
     game_id = re.findall(r'id=(\w+)', game_url)[0]
-
+    
     # Open a new file and write the binary to that file
     with open('./{}_game_records/'.format(yd)+game_id+'_'+filename, 'wb') as game_file:
         game_file.write(game_record.content)
