@@ -195,7 +195,8 @@ def scrape_yd_profiles():
     html_col = col_dict['html']
     # Iterate through html and send soup to scrape subpage
     for link in html_col.find():
-        profile_soup = link['html']
+        profile_soup = BeautifulSoup(link['html'], 'html.parser')
+        print("Now scraping {}".format(link['url']))
         scrape_subpage(profile_soup, 'eyd')
 
 
