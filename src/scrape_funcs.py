@@ -175,3 +175,72 @@ def generate_eyd_urls():
     prepend_address = 'https://eyd.yunguseng.com/season24/profile.php?id='
     for id in range(1, 851):
         yield prepend_address + str(id)
+
+
+def scrape_yd_profiles():
+    """Scrapes all game records from the collected pages."""
+
+    # Connect to AYD MongoDB
+    client, ayd_db, col_dict = get_mongo_connection('ayd', ['html'])
+    html_col = col_dict['html']
+
+    # Iterate through html send to soup to scrape_subpage
+    for link in html_col.find():
+        profile_soup = BeautifulSoup(link['html'], 'html.parser')
+        print("Now scraping {}".format(link['url']))
+        scrape_subpage(profile_soup, 'ayd')
+
+    # Connect to EYD MongoDB
+    client, ayd_db, col_dict = get_mongo_connection('eyd', ['html'])
+    html_col = col_dict['html']
+    # Iterate through html and send soup to scrape subpage
+    for link in html_col.find():
+        profile_soup = link['html']
+        scrape_subpage(profile_soup, 'eyd')
+
+
+def scrape_subpage(profile_soup, yd):
+    """Scrapes the subpage and downloads the game records."""
+
+    # Get all the the 'href' tags
+    all_links = profile_soup.findAll(lambda tag: tag.name == 'a'
+                                     and tag.has_attr('href'))
+
+    # Get the elements that contains an url starting with 'file'
+    game_links = [link['href'] for link in all_links if link['href']
+                  .startswith('file')]
+
+    # Prepend https://ayd.yunguseng.com/<current-season> to the profile links
+    prepend_address = 'https://{}.yunguseng.com/season24/'.format(yd)
+    game_links = [prepend_address+link for link in game_links]
+
+    # Download each file.
+    for game in game_links:
+        download_game(game, yd)
+        time.sleep(5)
+
+    return None
+
+
+def download_game(game_url, yd):
+    """Downloads the game at the provided URL."""
+
+    try:
+        game_record = req.get(game_url)
+    except Exception as e:
+        print('Failed to retrieve {}.'.format(game_url),
+              'Error message: {}'.format(e))
+        return None
+
+    print('Now downloading {}'.format(game_url))
+
+    # Get the filename from the meta-data
+    filename = game_record.headers['Content-Disposition'].replace(
+        'attachment; filename=', ''
+    )
+
+    # Open a new file and write the binary to that file
+    with open('./{}_game_records/'.format(yd)+filename, 'wb') as game_file:
+        game_file.write(game_record.content)
+
+    return None
