@@ -4,7 +4,8 @@ import datetime
 import time
 import requests as req
 import re
-
+import pandas as pd
+import json
 
 
 def get_mongo_connection(database, collections):
@@ -187,24 +188,43 @@ def scrape_yd_profiles():
     html_col = col_dict['html']
 
     # Iterate through html send to soup to scrape_subpage
-    game_links = set()
     for link in html_col.find():
         profile_soup = BeautifulSoup(link['html'], 'html.parser')
         print("Now scraping {}".format(link['url']))
-        game_links = scrape_subpage(profile_soup, 'ayd', game_links)
+        scrape_subpage(profile_soup, 'ayd')
 
     # Connect to EYD MongoDB
     client, ayd_db, col_dict = get_mongo_connection('eyd', ['html'])
     html_col = col_dict['html']
+
     # Iterate through html and send soup to scrape subpage
-    game_links = set()
     for link in html_col.find():
         profile_soup = BeautifulSoup(link['html'], 'html.parser')
         print("Now scraping {}".format(link['url']))
-        game_links = scrape_subpage(profile_soup, 'eyd', game_links)
+        scrape_subpage(profile_soup, 'eyd')
 
 
-def scrape_subpage(profile_soup, yd, downloaded):
+def scrape_subpage(profile_soup, yd):
+  """Scrapes the profile pages in MongoDB extracting the table data"""
+
+  # Get the statistics table from the page.
+  try:
+    table_df = pd.read_html(profile_soup.prettify(), attrs = {'class':'graytable', 'cellpadding':'4'})[0]
+  except Exception as e:
+    print(e)
+    return None
+
+  # Connect to mongoDB
+  client, ayd_db, col_dict = get_mongo_connection('ayd', ['games'])
+  games_col = col_dict['games']
+
+  records = json.loads(table_df.T.to_json()).values()
+  games_col.insert_many(records)
+
+  return None
+
+
+def old_scrape_subpage(profile_soup, yd, downloaded):
     """Scrapes the subpage and downloads the game records."""
 
     # Get all the the 'href' tags
@@ -246,9 +266,9 @@ def download_game(game_url, yd):
 
     # Extract the file id to ensure all games all collected
     game_id = re.findall(r'id=(\w+)', game_url)[0]
-    
+    file_path = './{}_game_records/'.format(yd) + game_id + '_' + filename
     # Open a new file and write the binary to that file
-    with open('./{}_game_records/'.format(yd)+game_id+'_'+filename, 'wb') as game_file:
+    with open(file_path, 'wb') as game_file:
         game_file.write(game_record.content)
 
     return None
