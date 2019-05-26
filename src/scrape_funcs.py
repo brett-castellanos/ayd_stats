@@ -6,6 +6,7 @@ import requests as req
 import re
 
 
+
 def get_mongo_connection(database, collections):
     """
     Connects to the local MongoDB.
@@ -186,22 +187,24 @@ def scrape_yd_profiles():
     html_col = col_dict['html']
 
     # Iterate through html send to soup to scrape_subpage
+    game_links = set()
     for link in html_col.find():
         profile_soup = BeautifulSoup(link['html'], 'html.parser')
         print("Now scraping {}".format(link['url']))
-        scrape_subpage(profile_soup, 'ayd')
+        game_links = scrape_subpage(profile_soup, 'ayd', game_links)
 
     # Connect to EYD MongoDB
     client, ayd_db, col_dict = get_mongo_connection('eyd', ['html'])
     html_col = col_dict['html']
     # Iterate through html and send soup to scrape subpage
+    game_links = set()
     for link in html_col.find():
         profile_soup = BeautifulSoup(link['html'], 'html.parser')
         print("Now scraping {}".format(link['url']))
-        scrape_subpage(profile_soup, 'eyd')
+        game_links = scrape_subpage(profile_soup, 'eyd', game_links)
 
 
-def scrape_subpage(profile_soup, yd):
+def scrape_subpage(profile_soup, yd, downloaded):
     """Scrapes the subpage and downloads the game records."""
 
     # Get all the the 'href' tags
@@ -215,13 +218,13 @@ def scrape_subpage(profile_soup, yd):
     # Prepend https://ayd.yunguseng.com/<current-season> to the profile links
     prepend_address = 'https://{}.yunguseng.com/season24/'.format(yd)
     game_links = set([prepend_address+link for link in game_links])
-
+    new_links = game_links - downloaded
     # Download each file.
     for game in game_links:
         download_game(game, yd)
         time.sleep(2)
 
-    return None
+    return downloaded.union(new_links)
 
 
 def download_game(game_url, yd):
